@@ -292,6 +292,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 5px;
     min-width: 32px;
     padding: 3px 8px;
     background: #1a1f26;
@@ -301,6 +302,19 @@
     font-weight: 700;
     color: #c9d1d9;
     font-family: 'Azeret Mono', monospace;
+  }
+
+  .set-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: #30363d;
+    color: #ffffff;
+    font-size: 10px;
+    line-height: 1;
   }
 
   .set-divider {
@@ -654,7 +668,7 @@
 
     .controls-buttons {
       gap: 8px;
-      transform: translateY(4px);
+      transform: translateY(1px);
     }
 
     .btn {
@@ -681,6 +695,13 @@
     .set-score {
       padding: 2px 6px;
       font-size: 11px;
+      gap: 4px;
+    }
+
+    .set-number {
+      min-width: 14px;
+      height: 14px;
+      font-size: 9px;
     }
 
     .set-divider {
@@ -881,7 +902,7 @@ function updateSetHistory() {
   let html = '<div class="set-history">';
   for (let i = 0; i < setHistory.length; i++) {
     const [scoreA, scoreB] = setHistory[i];
-    html += `<div class="set-score">${scoreA}-${scoreB}</div>`;
+    html += `<div class="set-score"><span class="set-number">${i + 1}</span><span>${scoreA}-${scoreB}</span></div>`;
     if (i < setHistory.length - 1) {
       html += '<div class="set-divider"></div>';
     }
