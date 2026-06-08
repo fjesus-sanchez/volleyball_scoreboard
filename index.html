@@ -256,7 +256,7 @@
     bottom: 0;
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 12px;
     height: 72px;
@@ -265,6 +265,49 @@
     box-sizing: content-box;
     background: #0b0f14;
     border-top: 1px solid #1a1f26;
+  }
+
+  .controls-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .controls-history {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    min-height: 60px;
+  }
+
+  .set-history {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .set-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    padding: 4px 10px;
+    background: #1a1f26;
+    border: 2px solid #30363d;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #c9d1d9;
+    font-family: 'Azeret Mono', monospace;
+  }
+
+  .set-divider {
+    width: 1px;
+    height: 20px;
+    background: #30363d;
   }
 
   /* Outlined pill buttons with overlapping circular icon */
@@ -603,30 +646,40 @@
     }
 
     .controls {
-      height: 30px;
-      padding: 0 14px;
-      padding-bottom: 0;
-      gap: 10px;
+      height: 60px;
+      padding: 0 12px;
+      padding-bottom: env(safe-area-inset-bottom);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .controls-buttons {
+      gap: 8px;
+      margin-top: 4px;
     }
 
     .btn {
-      font-size: 12px;
-      min-height: 22px;
-      padding: 3px 12px 3px 28px;
-      margin-top: 11px;
-      letter-spacing: 1px;
+      font-size: 14px;
+      min-height: 36px;
+      padding: 4px 16px 4px 38px;
+      margin-top: 0;
+      letter-spacing: 0.5px;
     }
 
     .btn .btn-icon {
-      top: -11px;
-      width: 22px;
-      height: 22px;
-      font-size: 12px;
+      top: -14px;
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
       border-width: 2px;
     }
 
+    .controls-history {
+      display: none;
+    }
+
     .container {
-      height: calc(100vh - 78px);
+      height: calc(100vh - 120px);
     }
   }
 
@@ -711,14 +764,19 @@
 </div>
 
 <div class="controls">
-  <button class="btn btn-undo" onclick="undo()">
-    <span class="btn-label">UNDO</span>
-    <span class="btn-icon">&#x21B6;</span>
-  </button>
-  <button class="btn btn-reset" onclick="resetMatch()">
-    <span class="btn-label">RESET</span>
-    <span class="btn-icon">&#x21BB;</span>
-  </button>
+  <div class="controls-buttons">
+    <button class="btn btn-undo" onclick="undo()">
+      <span class="btn-label">UNDO</span>
+      <span class="btn-icon">&#x21B6;</span>
+    </button>
+    <button class="btn btn-reset" onclick="resetMatch()">
+      <span class="btn-label">RESET</span>
+      <span class="btn-icon">&#x21BB;</span>
+    </button>
+  </div>
+  <div class="controls-history" id="controlsHistory">
+    <!-- Set history will be inserted here -->
+  </div>
 </div>
 
 <div id="matchDismiss" style="position:fixed;inset:0;z-index:40;display:none;"></div>
@@ -728,6 +786,7 @@
 let scoreA = 0, scoreB = 0;
 let setsA = 0, setsB = 0;
 let history = [];
+let setHistory = []; // Track completed sets
 let teamNameA = "AULA";
 let teamNameB = "Team B";
 let setStartTime = null;
@@ -801,6 +860,25 @@ function finalizeGameTime() {
     gameStartTime = null;
   }
   updateSetTimeUI();
+}
+
+function updateSetHistory() {
+  const historyContainer = document.getElementById('controlsHistory');
+  if (setHistory.length === 0) {
+    historyContainer.innerHTML = '';
+    return;
+  }
+
+  let html = '<div class="set-history">';
+  for (let i = 0; i < setHistory.length; i++) {
+    const [scoreA, scoreB] = setHistory[i];
+    html += `<div class="set-score">${scoreA}-${scoreB}</div>`;
+    if (i < setHistory.length - 1) {
+      html += '<div class="set-divider"></div>';
+    }
+  }
+  html += '</div>';
+  historyContainer.innerHTML = html;
 }
 
 function spawnConfetti(count) {
@@ -940,6 +1018,7 @@ function resetMatch() {
   setsA = 0;
   setsB = 0;
   history = [];
+  setHistory = [];
   setStartTime = null;
   setElapsedMs = 0;
   gameStartTime = null;
@@ -947,6 +1026,7 @@ function resetMatch() {
   document.getElementById('currentSetTime').innerText = "00:00";
   document.getElementById('currentGameTime').innerText = "00:00";
   updateUI();
+  updateSetHistory();
 }
 
 function resetSet() {
@@ -963,17 +1043,21 @@ function checkSetWin() {
 
   if (win(scoreA, scoreB)) {
     finalizeSetTime();
+    setHistory.push([scoreA, scoreB]);
     setsA++;
     resetSet();
     history = [];
+    updateSetHistory();
     triggerSetCelebration();
   }
 
   if (win(scoreB, scoreA)) {
     finalizeSetTime();
+    setHistory.push([scoreA, scoreB]);
     setsB++;
     resetSet();
     history = [];
+    updateSetHistory();
   }
 
   if (setsA === 3 || setsB === 3) {
