@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>VOLLEYBALL SCOREBOARD</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Manrope', sans-serif;
+    background: #0b0f14;
+    color: white;
+    overflow: hidden;
+    height: 100vh;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Title */
+  .title {
+    display: flex;
+    justify-content: center;
+    padding: calc(22px + env(safe-area-inset-top)) 12px 4px;
+  }
+
+  .title-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 22px 6px 52px;
+    background: #ffffff;
+    color: #111111;
+    border: 3px solid #111111;
+    border-radius: 999px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    line-height: 1;
+    min-height: 36px;
+    overflow: visible;
+  }
+
+  .title-label {
+    color: #111111;
+  }
+
+  .title-icon {
+    position: absolute;
+    top: -18px;
+    left: 6px;
+    width: 40px;
+    height: 40px;
+    background: #ffffff;
+    border: 3px solid #111111;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .subtitle {
+    text-align: center;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    color: #8b949e;
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  .container {
+    display: flex;
+    height: 82vh;
+    position: relative;
+  }
+
+  .center-info {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .team {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    position: relative;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .teamA {
+    background: linear-gradient(180deg, #f8f8f8, #ebebeb);
+    color: #0b0f14;
+  }
+
+  .teamB {
+    background: linear-gradient(180deg, #f8f8f8, #ebebeb);
+    color: #111111;
+  }
+
+  /* Team name editable */
+  .team-name {
+    font-size: 32px;
+    font-weight: 600;
+    opacity: 0.95;
+    margin-bottom: 0;
+    width: min(320px, 84%);
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    background: #161b22;
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #e6edf3;
+    text-align: center;
+    padding: 8px 10px;
+  }
+
+  .team-name:focus {
+    outline: none;
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+  }
+
+  .teamA .team-name {
+    background: #0b0f14;
+    color: #ffffff;
+    border: 3px solid #111111;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  .team-name-aula {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.05;
+    font-size: 10px;
+    text-align: left;
+    cursor: default;
+  }
+
+  .aula-mark {
+    display: inline-flex;
+    align-items: center;
+    color: #ffffff;
+  }
+
+  .aula-mark svg {
+    display: block;
+  }
+
+  .aula-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .teamB .team-name {
+    background: #d62828;
+    color: #ffffff;
+    border: 3px solid #111111;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  .teamA .team-name[readonly] {
+    cursor: default;
+  }
+
+  /* HUGE score */
+  .score {
+    font-size: 400px;
+    font-weight: 800;
+    cursor: pointer;
+    line-height: 0.85;
+  }
+
+  .teamA .score {
+    color: #111111;
+    text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  .teamB .score {
+    color: #d62828;
+    -webkit-text-stroke: 3px #111111;
+    text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* Sets badge */
+  .sets {
+    margin-top: 0;
+    font-size: 38px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-weight: 600;
+  }
+
+  /* Different colors per side */
+  .teamA .sets {
+    background: #111111;
+    color: #ffffff;
+    border: 3px solid #111111;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  .teamB .sets {
+    background: #d62828;
+    color: #ffffff;
+    border: 3px solid #111111;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* Tap zones */
+  .tap-area {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+  }
+
+  /* Bottom controls */
+  .controls {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    height: 72px;
+    padding: 0 14px;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: content-box;
+    background: #0b0f14;
+    border-top: 1px solid #1a1f26;
+  }
+
+  /* Outlined pill buttons with overlapping circular icon */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 28px 10px 56px;
+    background: #ffffff;
+    color: #111111;
+    border: 3px solid #111111;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    line-height: 1;
+    min-height: 44px;
+    margin-top: 22px;
+    overflow: visible;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease;
+  }
+
+  .btn:active {
+    transform: translateY(2px);
+  }
+
+  .btn .btn-label {
+    color: #111111;
+  }
+
+  .btn .btn-icon {
+    position: absolute;
+    top: -22px;
+    left: 8px;
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    border: 3px solid #111111;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #111111;
+  }
+
+  .btn-undo .btn-icon,
+  .btn-reset .btn-icon {
+    background: #ffffff;
+    border-color: #111111;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid #58a6ff;
+    outline-offset: 2px;
+  }
+
+  .timing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin: 0 12px 4px;
+  }
+
+  .time-chip {
+    font-family: 'Azeret Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    font-variant-numeric: tabular-nums;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    background: #161b22;
+    border-radius: 999px;
+    padding: 6px 12px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 130px;
+    box-sizing: border-box;
+  }
+
+  .time-chip .chip-label {
+    text-align: left;
+  }
+
+  .time-chip .chip-time {
+    text-align: right;
+  }
+
+  .celebration {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  .celebration.show {
+    display: flex;
+  }
+
+  .celebration-card {
+    text-align: center;
+    border-radius: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.32);
+    padding: 18px 20px;
+    max-width: min(86vw, 440px);
+    animation: pop 0.45s ease;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+  }
+
+  .celebration-set .celebration-card {
+    background: rgba(15, 23, 34, 0.84);
+  }
+
+  .celebration-match .celebration-card {
+    background: rgba(0, 0, 0, 0.86);
+    border-color: #ffffff;
+    box-shadow: 0 18px 54px rgba(0, 0, 0, 0.62), 0 0 24px rgba(255, 255, 255, 0.12);
+  }
+
+  .celebration-match h2 {
+    font-size: 34px;
+    letter-spacing: 0.8px;
+  }
+
+  .celebration-match p {
+    font-size: 16px;
+  }
+
+  .celebration h2 {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: 0.4px;
+  }
+
+  .celebration p {
+    margin: 8px 0 0;
+    color: #dbe5ef;
+    font-size: 15px;
+  }
+
+  .confetti {
+    position: fixed;
+    width: 8px;
+    height: 14px;
+    top: -20px;
+    z-index: 31;
+    pointer-events: none;
+    opacity: 0;
+    animation: fall 1.9s linear forwards;
+  }
+
+  .firework-burst {
+    position: fixed;
+    width: 0;
+    height: 0;
+    z-index: 33;
+    pointer-events: none;
+  }
+
+  .firework-core {
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+    animation: corePulse 0.45s ease-out forwards;
+  }
+
+  .spark {
+    position: absolute;
+    left: -2px;
+    top: -2px;
+    width: 4px;
+    height: 16px;
+    border-radius: 2px;
+    transform-origin: 50% 100%;
+    animation: sparkTrail 1s ease-out forwards;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.78); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(420deg); opacity: 0; }
+  }
+
+  @keyframes corePulse {
+    0% { transform: scale(0.2); opacity: 1; }
+    100% { transform: scale(3.4); opacity: 0; }
+  }
+
+  @keyframes sparkTrail {
+    0% {
+      transform: rotate(var(--angle)) translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(var(--angle)) translateY(calc(-1 * var(--distance))) scale(0.25);
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .score {
+      font-size: 320px;
+    }
+
+    .team-name {
+      font-size: 28px;
+    }
+
+    .sets {
+      font-size: 30px;
+      padding: 6px 14px;
+    }
+  }
+
+  /* Landscape on small phones (e.g. iPhone 13 mini landscape ~375px tall) */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .title {
+      padding: calc(10px + env(safe-area-inset-top)) 12px 2px;
+    }
+
+    .title-pill {
+      padding: 4px 16px 4px 42px;
+      font-size: 14px;
+      min-height: 26px;
+    }
+
+    .title-icon {
+      top: -12px;
+      left: 4px;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+    }
+
+    .title-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .subtitle {
+      font-size: 10px;
+      margin: 2px 0;
+    }
+
+    .timing {
+      margin: 0 12px 2px;
+      gap: 6px;
+    }
+
+    .time-chip {
+      font-size: 11px;
+      padding: 3px 8px;
+    }
+
+    .team-name {
+      font-size: 14px;
+      top: 6px;
+      padding: 3px 8px;
+      width: min(200px, 78%);
+    }
+
+    .team-name-aula {
+      font-size: 7px;
+      gap: 3px;
+      padding: 3px 6px;
+    }
+
+    .team-name-aula svg {
+      width: 72px;
+      height: 18px;
+    }
+
+    .score {
+      font-size: 65vh;
+      line-height: 0.8;
+    }
+
+    .sets {
+      font-size: 4vh;
+      padding: 0 9px;
+      border-width: 2px;
+      position: absolute;
+      top: 6px;
+      left: auto;
+      right: auto;
+      transform: none;
+      margin: 0;
+    }
+
+    .teamA .sets {
+      right: 6px;
+    }
+
+    .teamB .sets {
+      left: 6px;
+    }
+
+    .teamA .sets,
+    .teamB .sets {
+      border-width: 2px;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .controls {
+      height: 30px;
+      padding: 0 14px;
+      padding-bottom: 0;
+      gap: 10px;
+    }
+
+    .btn {
+      font-size: 12px;
+      min-height: 22px;
+      padding: 3px 12px 3px 28px;
+      margin-top: 11px;
+      letter-spacing: 1px;
+    }
+
+    .btn .btn-icon {
+      top: -11px;
+      width: 22px;
+      height: 22px;
+      font-size: 12px;
+      border-width: 2px;
+    }
+
+    .container {
+      height: calc(100vh - 78px);
+    }
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="title">
+  <div class="title-pill">
+    <span class="title-label">VOLLEYBALL SCOREBOARD</span>
+    <span class="title-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M11.1 7.1a16.55 16.55 0 0 1 10.9 4" />
+        <path d="M12 12a12.6 12.6 0 0 1-8.7 5" />
+        <path d="M16.8 13.6a16.55 16.55 0 0 1-9 7.5" />
+        <path d="M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10" />
+        <path d="M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5" />
+      </svg>
+    </span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="center-info" aria-hidden="false">
+    <div class="subtitle">Tap score to add points</div>
+    <div class="timing">
+      <div class="time-chip"><span class="chip-label">Set</span><span class="chip-time" id="currentSetTime">00:00</span></div>
+      <div class="time-chip"><span class="chip-label">Game</span><span class="chip-time" id="currentGameTime">00:00</span></div>
+    </div>
+  </div>
+
+  <!-- TEAM A -->
+  <div class="team teamA" onclick="addPoint('A')">
+    <div
+      class="team-name team-name-aula"
+      id="teamNameA"
+      onclick="event.stopPropagation()"
+      aria-label="AULA Escola Europea"
+    >
+      <span class="aula-mark" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 32" width="150" height="32" preserveAspectRatio="none" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter">
+          <!-- A -->
+          <polyline points="2,30 14,3 26,30" />
+          <line x1="6" y1="30" x2="22" y2="30" />
+          <!-- V -->
+          <polyline points="22,3 34,30 46,3" />
+          <!-- L -->
+          <polyline points="46,3 46,30 60,30" />
+          <!-- A -->
+          <polyline points="60,30 72,3 84,30" />
+          <line x1="64" y1="30" x2="80" y2="30" />
+        </svg>
+      </span>
+      <span class="aula-text">
+        <span>AULA</span>
+        <span>ESCOLA</span>
+        <span>EUROPEA</span>
+      </span>
+    </div>
+    <div class="score" id="scoreA">0</div>
+    <div class="sets" id="setsA">0</div>
+  </div>
+
+  <!-- TEAM B -->
+  <div class="team teamB" onclick="addPoint('B')">
+    <input
+      class="team-name"
+      id="teamNameB"
+      value="Team B"
+      maxlength="18"
+      onclick="event.stopPropagation()"
+      oninput="updateTeamNames()"
+      aria-label="Team B name"
+    />
+    <div class="score" id="scoreB">0</div>
+    <div class="sets" id="setsB">0</div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button class="btn btn-undo" onclick="undo()">
+    <span class="btn-label">UNDO</span>
+    <span class="btn-icon">&#x21B6;</span>
+  </button>
+  <button class="btn btn-reset" onclick="resetMatch()">
+    <span class="btn-label">RESET</span>
+    <span class="btn-icon">&#x21BB;</span>
+  </button>
+</div>
+
+<div id="matchDismiss" style="position:fixed;inset:0;z-index:40;display:none;"></div>
+
+<script>
+
+let scoreA = 0, scoreB = 0;
+let setsA = 0, setsB = 0;
+let history = [];
+let teamNameA = "AULA";
+let teamNameB = "Team B";
+let setStartTime = null;
+let setElapsedMs = 0;
+let gameStartTime = null;
+let gameElapsedMs = 0;
+let setTimerId = null;
+
+function updateTeamNames() {
+  const nameB = document.getElementById('teamNameB').value.trim();
+
+  teamNameA = "AULA";
+  teamNameB = nameB || "Team B";
+}
+
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
+  const sec = String(totalSec % 60).padStart(2, '0');
+  return min + ":" + sec;
+}
+
+function updateSetTimeUI() {
+  let currentMs = setElapsedMs;
+  if (setStartTime) {
+    currentMs = Date.now() - setStartTime;
+  }
+  document.getElementById('currentSetTime').innerText = formatDuration(currentMs);
+
+  let currentGameMs = gameElapsedMs;
+  if (gameStartTime) {
+    currentGameMs = Date.now() - gameStartTime;
+  }
+  document.getElementById('currentGameTime').innerText = formatDuration(currentGameMs);
+}
+
+function startSetTimerIfNeeded() {
+  if (!setStartTime) {
+    setStartTime = Date.now();
+    updateSetTimeUI();
+  }
+
+  if (!setTimerId) {
+    setTimerId = setInterval(updateSetTimeUI, 1000);
+  }
+}
+
+function startGameTimerIfNeeded() {
+  if (!gameStartTime) {
+    gameStartTime = Date.now();
+    updateSetTimeUI();
+  }
+
+  if (!setTimerId) {
+    setTimerId = setInterval(updateSetTimeUI, 1000);
+  }
+}
+
+function finalizeSetTime() {
+  if (setStartTime) {
+    setElapsedMs = Date.now() - setStartTime;
+    setStartTime = null;
+  }
+  document.getElementById('currentSetTime').innerText = "00:00";
+  setElapsedMs = 0;
+}
+
+function finalizeGameTime() {
+  if (gameStartTime) {
+    gameElapsedMs = Date.now() - gameStartTime;
+    gameStartTime = null;
+  }
+  updateSetTimeUI();
+}
+
+function spawnConfetti(count) {
+  const colors = ["#ffffff", "#111111", "#f85149", "#58a6ff"];
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti';
+    piece.style.left = (Math.random() * 100) + "vw";
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.45) + "s";
+    piece.style.transform = "rotate(" + Math.floor(Math.random() * 360) + "deg)";
+    document.body.appendChild(piece);
+
+    setTimeout(() => {
+      piece.remove();
+    }, 2200);
+  }
+}
+
+function triggerSetCelebration() {
+  spawnConfetti(70);
+  setTimeout(() => spawnConfetti(50), 700);
+  setTimeout(() => spawnConfetti(40), 1400);
+}
+
+let matchCelebrationIntervals = [];
+
+function stopMatchCelebration() {
+  matchCelebrationIntervals.forEach(id => clearInterval(id));
+  matchCelebrationIntervals = [];
+  const overlay = document.getElementById('matchDismiss');
+  overlay.style.display = 'none';
+  overlay.onclick = null;
+}
+
+function triggerMatchCelebration() {
+  spawnConfetti(160);
+  spawnFireworks(8, 16);
+
+  const confettiInterval = setInterval(() => spawnConfetti(60), 700);
+  const fireworksInterval = setInterval(() => {
+    spawnFireworks(4 + Math.floor(Math.random() * 4), 12 + Math.floor(Math.random() * 6));
+  }, 500);
+
+  matchCelebrationIntervals.push(confettiInterval, fireworksInterval);
+
+  const overlay = document.getElementById('matchDismiss');
+  overlay.style.display = 'block';
+  overlay.onclick = stopMatchCelebration;
+}
+
+function spawnFireworks(bursts, sparksPerBurst) {
+  const colors = ["#ffffff", "#ffd166", "#ff6b6b", "#4cc9f0", "#80ed99"];
+
+  for (let b = 0; b < bursts; b++) {
+    const burst = document.createElement('div');
+    burst.className = 'firework-burst';
+    burst.style.left = (8 + Math.random() * 84) + "vw";
+    burst.style.top = (10 + Math.random() * 48) + "vh";
+
+    const core = document.createElement('div');
+    core.className = 'firework-core';
+    burst.appendChild(core);
+
+    for (let i = 0; i < sparksPerBurst; i++) {
+      const spark = document.createElement('span');
+      spark.className = 'spark';
+      spark.style.background = colors[Math.floor(Math.random() * colors.length)];
+      spark.style.setProperty('--angle', String((360 / sparksPerBurst) * i) + "deg");
+      spark.style.setProperty('--distance', String(58 + Math.random() * 64) + "px");
+      spark.style.animationDelay = (Math.random() * 0.18) + "s";
+      burst.appendChild(spark);
+    }
+
+    document.body.appendChild(burst);
+
+    setTimeout(() => {
+      burst.remove();
+    }, 1400);
+  }
+}
+
+function addPoint(team) {
+  if (setsA === 3 || setsB === 3) return;
+
+  history.push({
+    scoreA,
+    scoreB,
+    setsA,
+    setsB,
+    setStartTime,
+    setElapsedMs,
+    gameStartTime,
+    gameElapsedMs
+  });
+
+  startSetTimerIfNeeded();
+  startGameTimerIfNeeded();
+
+  if (team === 'A') scoreA++;
+  else scoreB++;
+
+  checkSetWin();
+  updateUI();
+}
+
+function updateUI() {
+  document.getElementById('scoreA').innerText = scoreA;
+  document.getElementById('scoreB').innerText = scoreB;
+  document.getElementById('setsA').innerText = setsA;
+  document.getElementById('setsB').innerText = setsB;
+}
+
+function undo() {
+  if (history.length === 0) return;
+  stopMatchCelebration();
+  let last = history.pop();
+
+  scoreA = last.scoreA;
+  scoreB = last.scoreB;
+  setsA = last.setsA;
+  setsB = last.setsB;
+  setStartTime = last.setStartTime;
+  setElapsedMs = last.setElapsedMs;
+  gameStartTime = last.gameStartTime;
+  gameElapsedMs = last.gameElapsedMs;
+
+  updateUI();
+  updateSetTimeUI();
+}
+
+function resetMatch() {
+  stopMatchCelebration();
+
+  scoreA = 0;
+  scoreB = 0;
+  setsA = 0;
+  setsB = 0;
+  history = [];
+  setStartTime = null;
+  setElapsedMs = 0;
+  gameStartTime = null;
+  gameElapsedMs = 0;
+  document.getElementById('currentSetTime').innerText = "00:00";
+  document.getElementById('currentGameTime').innerText = "00:00";
+  updateUI();
+}
+
+function resetSet() {
+  scoreA = 0;
+  scoreB = 0;
+}
+
+function checkSetWin() {
+  let target = (setsA + setsB === 4) ? 15 : 21;
+
+  function win(a, b) {
+    return a >= target && (a - b) >= 2;
+  }
+
+  if (win(scoreA, scoreB)) {
+    finalizeSetTime();
+    setsA++;
+    resetSet();
+    history = [];
+    triggerSetCelebration();
+  }
+
+  if (win(scoreB, scoreA)) {
+    finalizeSetTime();
+    setsB++;
+    resetSet();
+    history = [];
+  }
+
+  if (setsA === 3 || setsB === 3) {
+    finalizeGameTime();
+    setTimeout(() => {
+      triggerMatchCelebration();
+    }, 100);
+  }
+}
+
+updateTeamNames();
+updateUI();
+updateSetTimeUI();
+
+</script>
+
+</body>
+</html>
