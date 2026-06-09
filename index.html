@@ -304,6 +304,17 @@
     font-family: 'Azeret Mono', monospace;
   }
 
+  .set-score.set-loss {
+    background: #d62828;
+    border-color: #111111;
+    border-radius: 2px;
+    color: #ffffff;
+  }
+
+  .set-score.set-loss .set-number {
+    background: rgba(0, 0, 0, 0.35);
+  }
+
   .set-number {
     display: inline-flex;
     align-items: center;
@@ -810,6 +821,7 @@
 </div>
 
 <div id="matchDismiss" style="position:fixed;inset:0;z-index:40;display:none;"></div>
+<div id="setContinue" style="position:fixed;inset:0;z-index:45;display:none;"></div>
 
 <script>
 
@@ -824,6 +836,7 @@ let setElapsedMs = 0;
 let gameStartTime = null;
 let gameElapsedMs = 0;
 let setTimerId = null;
+let pendingLocalSetWin = null;
 
 function updateTeamNames() {
   const nameB = document.getElementById('teamNameB').value.trim();
@@ -875,13 +888,23 @@ function startGameTimerIfNeeded() {
   }
 }
 
-function finalizeSetTime() {
+function holdSetTime() {
   if (setStartTime) {
     setElapsedMs = Date.now() - setStartTime;
     setStartTime = null;
   }
+  updateSetTimeUI();
+}
+
+function resetSetTime() {
   document.getElementById('currentSetTime').innerText = "00:00";
   setElapsedMs = 0;
+  updateSetTimeUI();
+}
+
+function finalizeSetTime() {
+  holdSetTime();
+  resetSetTime();
 }
 
 function finalizeGameTime() {
@@ -901,8 +924,9 @@ function updateSetHistory() {
 
   let html = '<div class="set-history">';
   for (let i = 0; i < setHistory.length; i++) {
-    const [scoreA, scoreB] = setHistory[i];
-    html += `<div class="set-score"><span class="set-number">${i + 1}</span><span>${scoreA}-${scoreB}</span></div>`;
+    const [setScoreA, setScoreB] = setHistory[i];
+    const setLossClass = setScoreA < setScoreB ? ' set-loss' : '';
+    html += `<div class="set-score${setLossClass}"><span class="set-number">${i + 1}</span><span>${setScoreA}-${setScoreB}</span></div>`;
     if (i < setHistory.length - 1) {
       html += '<div class="set-divider"></div>';
     }
@@ -934,14 +958,58 @@ function triggerSetCelebration() {
   setTimeout(() => spawnConfetti(40), 1400);
 }
 
+function showLocalSetContinue(matchWon) {
+  pendingLocalSetWin = { matchWon };
+  const overlay = document.getElementById('setContinue');
+  overlay.style.display = 'block';
+  overlay.onclick = continueAfterLocalSetWin;
+}
+
+function clearLocalSetContinue() {
+  pendingLocalSetWin = null;
+  const overlay = document.getElementById('setContinue');
+  overlay.style.display = 'none';
+  overlay.onclick = null;
+}
+
+function continueAfterLocalSetWin() {
+  if (!pendingLocalSetWin) return;
+
+  const matchWon = pendingLocalSetWin.matchWon;
+  clearLocalSetContinue();
+  resetSet();
+  resetSetTime();
+  updateUI();
+
+  if (matchWon) {
+    stopMatchCelebration();
+  }
+}
+
 let matchCelebrationIntervals = [];
+let matchCelebrationTimeoutId = null;
 
 function stopMatchCelebration() {
+  if (matchCelebrationTimeoutId) {
+    clearTimeout(matchCelebrationTimeoutId);
+    matchCelebrationTimeoutId = null;
+  }
   matchCelebrationIntervals.forEach(id => clearInterval(id));
   matchCelebrationIntervals = [];
   const overlay = document.getElementById('matchDismiss');
   overlay.style.display = 'none';
   overlay.onclick = null;
+}
+
+function scheduleMatchCelebration() {
+  if (matchCelebrationTimeoutId) {
+    clearTimeout(matchCelebrationTimeoutId);
+  }
+
+  matchCelebrationTimeoutId = setTimeout(() => {
+    matchCelebrationTimeoutId = null;
+    triggerMatchCelebration();
+  }, 100);
 }
 
 function triggerMatchCelebration() {
@@ -992,6 +1060,7 @@ function spawnFireworks(bursts, sparksPerBurst) {
 }
 
 function addPoint(team) {
+  if (pendingLocalSetWin) return;
   if (setsA === 3 || setsB === 3) return;
 
   history.push({
@@ -1025,6 +1094,7 @@ function updateUI() {
 function undo() {
   if (history.length === 0) return;
   stopMatchCelebration();
+  clearLocalSetContinue();
   let last = history.pop();
 
   scoreA = last.scoreA;
@@ -1042,6 +1112,7 @@ function undo() {
 
 function resetMatch() {
   stopMatchCelebration();
+  clearLocalSetContinue();
 
   scoreA = 0;
   scoreB = 0;
@@ -1072,13 +1143,13 @@ function checkSetWin() {
   }
 
   if (win(scoreA, scoreB)) {
-    finalizeSetTime();
+    holdSetTime();
     setHistory.push([scoreA, scoreB]);
     setsA++;
-    resetSet();
     history = [];
     updateSetHistory();
     triggerSetCelebration();
+    showLocalSetContinue(setsA === 3);
   }
 
   if (win(scoreB, scoreA)) {
@@ -1092,9 +1163,7 @@ function checkSetWin() {
 
   if (setsA === 3 || setsB === 3) {
     finalizeGameTime();
-    setTimeout(() => {
-      triggerMatchCelebration();
-    }, 100);
+    scheduleMatchCelebration();
   }
 }
 
